@@ -15,6 +15,7 @@
 package org.eclipse.vorto.service.mapping.internal.serializer
 
 import java.util.HashSet
+import org.eclipse.vorto.repository.api.ModelId
 import org.eclipse.vorto.service.mapping.spec.IMappingSpecification
 
 /**
@@ -26,7 +27,7 @@ class InformationModelMappingSerializer extends AbstractSerializer {
 		super(spec)
 	}
 	
-	def override String serialize() {
+	def override String serialize(String targetPlatform) {
 		'''
 		namespace «specification.infoModel.id.namespace».mapping
 		version 1.0.0
@@ -37,18 +38,23 @@ class InformationModelMappingSerializer extends AbstractSerializer {
 		using «specification.infoModel.id.prettyFormat.replace(":",";")»
 		«var imports = new HashSet »
 		«FOR fbProperty : specification.infoModel.functionblocks»
-			«imports.add("using " + specification.infoModel.id.namespace+".mapping"+"."+fbProperty.name.toFirstUpper+"PayloadMapping;1.0.0")»
+			«var status = imports.add("using " + specification.infoModel.id.namespace+".mapping"+"."+fbProperty.name.toFirstUpper+"PayloadMapping;1.0.0")»
 		«ENDFOR»
 		«FOR using : imports»
 		«using»
 		«ENDFOR»
 		
 		infomodelmapping «specification.infoModel.id.name»PayloadMapping {
-			targetplatform «createTargetPlatformKey()»
+			targetplatform «targetPlatform»
 			«FOR fbProperty : specification.infoModel.functionblocks»
 			from «specification.infoModel.id.name».functionblocks.«fbProperty.name» to reference «fbProperty.name.toFirstUpper+"PayloadMapping"»
 			«ENDFOR»
 		}
 		'''
 	}
+	
+	override getModelId() {
+		return new ModelId(specification.infoModel.id.name+"PayloadMapping",specification.infoModel.id.namespace+".mapping","1.0.0");
+	}
+	
 }

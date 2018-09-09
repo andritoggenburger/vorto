@@ -289,7 +289,6 @@ public class BleGattMappingTest {
 			functions.addFunction("convertSensorValue","function convertSensorValue(value) { return value*0.01; }");
 			return Optional.of(functions);
 		}
-		
 	}
 
 }

@@ -18,6 +18,7 @@ import java.util.List
 import java.util.Map
 import java.util.stream.Collectors
 import org.apache.commons.text.StringEscapeUtils
+import org.eclipse.vorto.repository.api.ModelId
 import org.eclipse.vorto.repository.api.content.FunctionblockModel
 import org.eclipse.vorto.repository.api.content.Stereotype
 import org.eclipse.vorto.service.mapping.spec.IMappingSpecification
@@ -36,7 +37,7 @@ class FunctionblockMappingSerializer extends AbstractSerializer {
 		this.fbm = spec.getFunctionBlock(propertyName);
 	}
 	
-	def override String serialize() {
+	def override String serialize(String targetPlatform) {
 		'''
 		namespace «specification.infoModel.id.namespace».mapping
 		version 1.0.0
@@ -47,7 +48,7 @@ class FunctionblockMappingSerializer extends AbstractSerializer {
 		using «fbm.id.prettyFormat.replace(":",";")»
 		
 		functionblockmapping «propertyName.toFirstUpper»PayloadMapping {
-			targetplatform «createTargetPlatformKey()»
+			targetplatform «targetPlatform»
 			«IF specification.getFunctionBlock(propertyName).getStereotype("functions").present && !specification.getFunctionBlock(propertyName).getStereotype("functions").get().attributes.isEmpty»
 				from «fbm.id.name» to functions with {«createFunctions(specification.getFunctionBlock(propertyName).getStereotype("functions").get)»}
 			«ENDIF»
@@ -99,5 +100,7 @@ class FunctionblockMappingSerializer extends AbstractSerializer {
 		return content.toString;
 	}
 	
-	
+	override getModelId() {
+		return new ModelId(propertyName.toFirstUpper+"PayloadMapping",specification.infoModel.id.namespace+".mapping","1.0.0");
+	}
 }

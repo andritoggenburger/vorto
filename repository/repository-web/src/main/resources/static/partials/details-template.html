@@ -43,6 +43,12 @@
 					<span class="fa fa-plus" aria-hidden="true"></span>&nbsp;Create Version</a>
 				<div class="pull-right">&nbsp;&nbsp;</div>
 			</div>
+			
+			<div ng-show="(authority === 'ROLE_ADMIN' || authority === 'ROLE_USER') && model.type === 'InformationModel' ">
+				<a class="btn btn-primary pull-left" href="#/payloadmapping/{{model.id.namespace}}/{{model.id.name}}/{{model.id.version}}" role="button">
+					<span class="fa fa-plus" aria-hidden="true"></span>&nbsp;Create Payload Mapping</a>
+				<div class="pull-right">&nbsp;&nbsp;</div>
+			</div>
 
 			<div ng-show="authority === 'ROLE_ADMIN' || authority === 'ROLE_USER'">
 				<a class="btn btn-primary pull-right" ng-click="openCreateModelDialog()" role="button">

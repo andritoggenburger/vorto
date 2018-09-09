@@ -24,8 +24,4 @@ public abstract class AbstractSerializer implements IMappingSerializer {
 	public AbstractSerializer(IMappingSpecification spec) {
 		this.specification = spec;
 	}
-	
-	protected String createTargetPlatformKey() {
-		return specification.getInfoModel().getId().getPrettyFormat().replace(".", "_").replace(":", "_");
-	}
 }

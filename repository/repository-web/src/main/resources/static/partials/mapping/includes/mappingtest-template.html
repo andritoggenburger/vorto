@@ -1,0 +1,23 @@
+<div class="row">
+	<div class="alert alert-danger alert-dismissable" ng-show="errorMessage != null">
+    	<h4><i class="fa fa-warning"></i> Error</h4>
+        Error evaluating rule expression: {{errorMessage}}<br/><br/>
+    </div>
+	<div class="alert alert-warning alert-dismissable" ng-hide="testResponse.valid">
+    	<h4><i class="fa fa-warning"></i> Invalid according to Thing Type Schema</h4>
+        {{testResponse.validationError}}!<br/><br/>
+    </div>
+    <div class="alert alert-success" ng-show="testResponse.valid && mappedOutput != null">
+      <p><i class="fa fa-check-circle-o fa-3x" aria-hidden="true"></i> Nice work! Your mapping is valid.</p>
+    </div>
+  	<div class="col-md-6">
+  		Specify your device test data (JSON format) and hit 'Run Test': </br>
+  		<div id="testEditor" ui-ace="{ onLoad : sourceEditorLoaded, onChange: aceChanged }" style="height: 200px;"></div>
+  		<button type="submit" class="btn btn-primary btn-lg pull-right" ng-click="executeTest()"><i ng-show="testInProgress" class='fa fa-refresh fa-spin'></i> Run Test</button>
+  	</div>
+  	<div class="col-md-6">
+  		Mapped Data:
+  		<pretty-json ng-show="mappedOutput != null" json="mappedOutput" style="height: 200px;"></pretty-json>
+  		<pretty-json ng-show="mappedOutput == null" json="{}" style="height: 200px;"></pretty-json>
+  	</div>
+  </div>

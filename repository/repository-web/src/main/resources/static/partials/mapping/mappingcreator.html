@@ -1,0 +1,74 @@
+<!-- Main content -->
+<section class="content" id="mapping">
+   <ol class="breadcrumb">
+      <li><a href="#"></i>Explore</a></li>
+      <li class="active">Create Mapping Specification</li>
+  </ol>
+  <div class="row">
+  <div class="col-md-7">
+            <div class="box">
+             <div class="row">
+             <div class="col-md-2 text-center">
+            <span class="info-box-icon bg-white">
+              <img width="auto" height="64px" ng-src="./rest/model/image/{{modelId.namespace}}/{{modelId.name}}/{{modelId.version}}">
+            </span>
+             </div>
+                 <div class="col-md-10">
+                      <h4>
+                  		Mapping for <a href="./#/details/{{modelId.namespace}}/{{ modelId.name }}/{{ modelId.version }}">{{modelId.prettyFormat}}</a>
+ 					  </h4>
+ 					  <button type="submit" ng-disabled="isLoading" class="btn btn-primary btn-lg pull-right" ng-click="showPublishDialog()"><i ng-show="publishInProgress" class='fa fa-refresh fa-spin'></i> Save</button>
+ 					  <span ng-show="publishError != null" style="color:red">Mapping Specification is not valid. Cannot activate.</br></br></span>
+                  </div>
+                   </div>
+            </div>
+          </div>
+  </div>
+  <div class="row">
+  <p>
+  	Mapping Specifications let you map arbitrary device payload to Vorto Information Model compliant payload.
+  </p>
+   <div class="col-md-12">
+    <div class="nav-tabs-custom">
+      <ul class="nav nav-tabs">
+        <li ng-repeat="property in infomodel.functionblocks" style="bottom: 2px;"  ng-class="{active : $index === 0}"><a href="" data-target="#{{property.name}}_tab" data-toggle="tab">{{property.name}} Mapping</a></li>  
+      	<li style="bottom: 2px;"><a href="" data-target="#mappingtest_tab" data-toggle="tab"><i class="fa fa-play-circle" aria-hidden="true"></i> <b>Execute Test</b></a></li>  
+      </ul>
+      
+      <div class="tab-content">
+        <!-- /.tab-pane -->
+        <div ng-repeat="property in infomodel.functionblocks" class="tab-pane" ng-class="{active : $index === 0}" id="{{property.name}}_tab" >
+          <div ng-include src="'partials/mapping/includes/fbmapping-template.html'"></div>
+        </div>
+        <div class="tab-pane" id="mappingtest_tab" >
+          <div ng-include src="'partials/mapping/includes/mappingtest-template.html'"></div>
+        </div>
+      </div>
+      <!-- /.tab-content -->
+    </div>
+      	</div>
+    <!-- /.nav-tabs -->
+  </div>
+  <div class="jumbotron text-center" ng-show="isLoading">
+	<h3><i class='fa fa-refresh fa-spin'></i>&nbsp; Loading Mapping Specification...</h3>
+ </div>
+</section>
+
+<script type="text/ng-template" id="publishDialog.html">
+	<div class="modal-header">
+		<button type="button" class="close" ng-click="dismissDialog()" aria-label="Close">
+			<span aria-hidden="true">×</span>
+		</button>
+		<h4 class="modal-title">Save Mapping Specification</h4>
+	</div>
+	<div class="modal-body">
+		Are you sure, you want to Save the mapping specification?
+		</br>
+		</br>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-primary" ng-click="publishSpec()"><i ng-show="publishInProgress" class='fa fa-refresh fa-spin'></i>Save</button>
+		<button type="button" class="btn btn-default" ng-click="dismissDialog()">Cancel</button>	
+	</div>
+</script>
+
