@@ -7,7 +7,7 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 						  prettyFormat: $routeParams.namespace+"."+$routeParams.name+":"+$routeParams.version
 						 };
 						 
-		$scope.targetPlatform = "ipso";
+		$scope.targetPlatform = $routeParams.targetPlatform;
 						 
 		$scope.conditionsInfoPopover = $sce.trustAsHtml(
 			'Use built-in functions for expressions: <p> </p> '+

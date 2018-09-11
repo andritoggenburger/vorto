@@ -521,6 +521,37 @@ repositoryControllers.controller('DetailsController', ['$rootScope', '$scope', '
 					$location.path("/details/" + model.id.namespace + "/" + model.id.name + "/" + model.id.version);
 				});
 		};
+		
+		$scope.openPayloadMappingDialog = function () {
+			var modalInstance = $uibModal.open({
+				animation: true,
+				controller: function ($scope,model) {
+					$scope.model = model;
+					$scope.errorMessage = null;
+					$scope.targetPlatform = "";
+	
+					$scope.open = function () {
+						modalInstance.close($scope.targetPlatform);
+					};
+
+					$scope.cancel = function () {
+						modalInstance.dismiss();
+					};
+				},
+				templateUrl: "payloadMappingDialog.html",
+				size: "lg",
+				resolve: {
+					model: function () {
+						return $scope.model;
+					}
+				}
+			});
+
+			modalInstance.result.then(
+				function (targetPlatform) {
+					$location.path("/payloadmapping/" + $scope.model.id.namespace + "/" + $scope.model.id.name + "/" + $scope.model.id.version + "/" + targetPlatform);
+				});
+		};
 
 		$scope.openSearchDialog = function () {
 			var modalInstance = $uibModal.open({

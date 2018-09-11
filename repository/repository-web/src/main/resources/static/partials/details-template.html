@@ -45,7 +45,7 @@
 			</div>
 			
 			<div ng-show="(authority === 'ROLE_ADMIN' || authority === 'ROLE_USER') && model.type === 'InformationModel' ">
-				<a class="btn btn-primary pull-left" href="#/payloadmapping/{{model.id.namespace}}/{{model.id.name}}/{{model.id.version}}" role="button">
+				<a class="btn btn-primary pull-left" ng-click="openPayloadMappingDialog()" role="button">
 					<span class="fa fa-exchange" aria-hidden="true"></span>&nbsp;Open Payload Mapper</a>
 			</div>
 
@@ -596,6 +596,36 @@
 		<button ng-hide="successfullyDeleted" type="button" ng-disable="isDeleting" class="btn btn-default" ng-click="cancel()">Cancel</button>
 		<button ng-show="successfullyDeleted" type="button" class="btn btn-default" ng-click="cancel()">Close</button>
 	</div>
+</script>
+
+<!-- Payload Mapping Dialog -->
+<script type="text/ng-template" id="payloadMappingDialog.html">
+<div class="modal-header">
+	<h3 class="modal-title"><center>Open Payload Mapping</center></h3>
+</div>
+<div class="modal-body">
+	<form name="createPayloadMappingForm" novalidate>
+	<div ng-if="errorMessage != null" class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> {{errorMessage}}</div>
+	<label>Select existing mapping:</label>
+	<div class="form-group">
+		<select id="targetPlatformKey" ng-model="targetPlatform" class="form-control">
+			<option ng-repeat="(key, value) in model.platformMappings" value="{{key}}">{{key}}</option>
+		</select>
+	</div>
+	---- or  ----
+    <div class="form-group">
+    	<label>Create new Mapping Key:</label>
+        <input type="text" class="form-control" name="targetPlatform" ng-model="targetPlatform" ng-pattern="/[a-zA-Z]*/" required>
+        <div ng-show="createPayloadMappingForm.targetPlatform.$error.pattern">Please enter a valid mapping key. Example: blegatt</div>
+    </div>
+  </div>
+</form>
+<div class="modal-footer">
+	<div class="align-right">
+	    <button ng-if="!isLoading" class="btn btn-primary" type="button" ng-disabled="isLoading || createPayloadMappingForm.$invalid" ng-click="open()">Open</button>
+	    <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+	</div>
+</div>
 </script>
 
 <!-- upload attachement modal dialog -->
