@@ -25,7 +25,7 @@ import org.eclipse.vorto.repository.workflow.WorkflowException;
 import org.eclipse.vorto.service.mapping.DataInputFactory;
 import org.eclipse.vorto.service.mapping.IDataMapper;
 import org.eclipse.vorto.service.mapping.MappingContext;
-import org.eclipse.vorto.service.mapping.ditto.DittoData;
+import org.eclipse.vorto.service.mapping.normalized.InfomodelData;
 import org.eclipse.vorto.service.mapping.serializer.IMappingSerializer;
 import org.eclipse.vorto.service.mapping.serializer.MappingSpecificationSerializer;
 import org.eclipse.vorto.service.mapping.spec.IMappingSpecification;
@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping(value = "/rest/mappings")
@@ -78,6 +80,10 @@ public class PayloadMappingController {
 			// adding empty stereotype for all status properties, if necessary
 			fbm.getStatusProperties().stream().filter(p -> !p.getStereotype("source").isPresent())
 					.forEach(p -> p.addStereotype(Stereotype.createWithXpath("")));
+			
+			// adding empty stereotype for all configuration properties, if necessary
+			fbm.getConfigurationProperties().stream().filter(p -> !p.getStereotype("source").isPresent())
+				.forEach(p -> p.addStereotype(Stereotype.createWithXpath("")));
 
 			unescapeMappingAttributesForStereotype(fbm, "functions");
 			unescapeMappingAttributesForStereotype(fbm,"source");
@@ -109,15 +115,14 @@ public class PayloadMappingController {
 	}
 
 	@RequestMapping(value = "/test", method = RequestMethod.PUT)
-	public TestMappingResponse testMapping(@RequestBody TestMappingRequest testRequest) {
-		IDataMapper<DittoData> dittoMapper = IDataMapper.newBuilder().withSpecification(testRequest.getSpecification())
-				.buildDittoMapper();
-		String mappedOutput = dittoMapper
-				.map(DataInputFactory.getInstance().fromJson(testRequest.getSourceJson()), MappingContext.empty())
-				.toJson();
+	public TestMappingResponse testMapping(@RequestBody TestMappingRequest testRequest) throws Exception {
+		IDataMapper mapper = IDataMapper.newBuilder().withSpecification(testRequest.getSpecification())
+				.build();
+		InfomodelData mappedOutput = mapper
+				.map(DataInputFactory.getInstance().fromJson(testRequest.getSourceJson()), MappingContext.empty());
 
 		TestMappingResponse response = new TestMappingResponse();
-		response.setMappedOutput(mappedOutput);
+		response.setMappedOutput(new ObjectMapper().writeValueAsString(mappedOutput.getProperties()));
 		return response;
 	}
 
@@ -136,7 +141,7 @@ public class PayloadMappingController {
 
 	public ModelId serializeAndSave(IMappingSerializer m, String targetPlatform, IUserContext user) {
 		final ModelId createdModelId = m.getModelId();	
-		repository.save(createdModelId, m.serialize(targetPlatform).getBytes(), "payload.mapping", user);
+		repository.save(createdModelId, m.serialize(targetPlatform).getBytes(), createdModelId.getName()+".mapping", user);
 		try {
 			if (!workflowService.getStateModel(createdModelId).isPresent()) {
 				workflowService.start(createdModelId);

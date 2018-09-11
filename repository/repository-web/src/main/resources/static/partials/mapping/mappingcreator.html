@@ -3,23 +3,24 @@
    <ol class="breadcrumb">
       <li><a href="#"></i>Explore</a></li>
       <li><a href="./#/details/{{modelId.namespace}}/{{ modelId.name }}/{{ modelId.version }}"></i>{{modelId.prettyFormat}}</a></li>
-      <li class="active">Mapping Specification</li>
+      <li class="active">Payload Mapping</li>
   </ol>
   <div class="row">
-  <div class="col-md-7">
+  <div class="col-md-10">
             <div class="box">
              <div class="row">
              <div class="col-md-2 text-center">
-            <span class="info-box-icon bg-white">
-              <img width="auto" height="64px" ng-src="./rest/model/image/{{modelId.namespace}}/{{modelId.name}}/{{modelId.version}}">
-            </span>
+            	<dt>State:</dt>
+					<dd class="ng-binding">
+					<span class="state state-{{state}}">{{ state }}</span>
+				</dd>
              </div>
                  <div class="col-md-10">
                       <h4>
                   		Mapping for <a href="./#/details/{{modelId.namespace}}/{{ modelId.name }}/{{ modelId.version }}">{{modelId.prettyFormat}}</a>
  					  </h4>
- 					  <button type="submit" ng-disabled="isLoading" class="btn btn-primary btn-lg pull-right" ng-click="showPublishDialog()"><i ng-show="publishInProgress" class='fa fa-refresh fa-spin'></i> Save</button>
- 					  <span ng-show="publishError != null" style="color:red">Mapping Specification is not valid. Cannot activate.</br></br></span>
+ 					  <div ng-if="success" class="alert alert-success"><i class="fa fa-fw fa-check"></i> {{success}}</div>	
+					 <button type="submit" ng-disabled="isLoading" class="btn btn-primary btn-lg pull-right" ng-click="save()">Save</button>
                   </div>
                    </div>
             </div>
@@ -27,7 +28,7 @@
   </div>
   <div class="row">
   <p>
-  	Mapping Specifications let you map arbitrary device payload to Vorto Information Model compliant payload.
+  	Mapping Specifications let you map arbitrary device payload to Vorto Information Model compliant data.
   </p>
    <div class="col-md-12">
     <div class="nav-tabs-custom">
@@ -63,7 +64,7 @@
 		<h4 class="modal-title">Save Mapping Specification</h4>
 	</div>
 	<div class="modal-body">
-		Are you sure, you want to Save the mapping specification?
+		Are you sure, you want to save the payload mapping?
 		</br>
 		</br>
 	</div>

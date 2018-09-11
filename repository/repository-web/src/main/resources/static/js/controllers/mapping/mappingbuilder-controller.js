@@ -7,6 +7,8 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 						  prettyFormat: $routeParams.namespace+"."+$routeParams.name+":"+$routeParams.version
 						 };
 						 
+		$scope.targetPlatform = "ipso";
+						 
 		$scope.conditionsInfoPopover = $sce.trustAsHtml(
 			'Use built-in functions for expressions: <p> </p> '+
 			' <ul> '+
@@ -29,7 +31,6 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 		$scope.isLoading = false;
 		
 		$scope.testInProgress = false;
-		$scope.publishInProgress = false;
 		
 		$scope.errorMessage = null;
 				
@@ -174,7 +175,7 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 				
 	    $scope.loadMappingSpec = function() {
 	    	$scope.isLoading = true;
-			$http.get('./rest/mappings/'+$scope.modelId.prettyFormat+"/ipso").success(
+			$http.get('./rest/mappings/'+$scope.modelId.prettyFormat+"/"+$scope.targetPlatform).success(
 				function(data, status, headers, config) {
 					$scope.infomodel = data.infoModel;
 					$scope.properties = data.properties;
@@ -203,44 +204,13 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 	    	}
 	    };
 	    
-	    $scope.showPublishDialog = function() {
-			var publishDialog = 
-				$uibModal.open({
-					animation: true,
-					ariaLabelledBy: 'modal-title-bottom',
-					ariaDescribedBy: 'modal-body-bottom',
-					templateUrl: 'publishDialog.html',
-					size: 'lg',
-					controller: function($scope,infomodel,properties) {
-				        $scope.infomodel = infomodel;
-				        $scope.properties = properties;
-				        $scope.publishSpec = function() {
-	    					$scope.publishInProgress = true;
-					    	var specification = {"infomodel":$scope.infomodel,"properties":$scope.properties};
-							$http.put("./rest/mappings/"+$scope.modelId.prettyFormat+"/ipso",specification).success(
+	    $scope.save = function() {
+			var specification = {"infomodel":$scope.infomodel,"properties":$scope.properties};
+							$http.put("./rest/mappings/"+$scope.modelId.prettyFormat+"/"+$scope.targetPlatform,specification).success(
 								function(data, status, headers, config) {
-									$scope.publishInProgress = false;
-									publishDialog.close();
+									$scope.success = "Payload Mapping was saved successfully.";
 								}).error(function(data, status, headers, config) {
-									$scope.publishInProgress = false;
-									publishDialog.close();
-									$scope.publishError = "There was a problem saving the mapping specification.";
-								});		
-	    				};
-				        
-				        $scope.dismissDialog = function() {
-				        	publishDialog.dismiss();
-				        };
-					},
-					resolve: {
-			    		infomodel: function () {
-			      			return $scope.infomodel;
-			    		},
-			    		properties: function() {
-			    			return $scope.properties;
-			    		}
-					}					
-			    });
+								});	
 			    
 		};
 	    	    
@@ -313,6 +283,22 @@ repositoryControllers.controller('MappingBuilderController', ['$rootScope','$uib
 	    		$scope.sourceEditorSession.getDocument().setValue(JSON.stringify(simpleTestData,null,4));
 	    	},2000);	  
 	    };
+	    
+	    $scope.getMappingState = function() {
+	    	$http.get('./rest/mappings/'+$scope.modelId.prettyFormat+'/'+$scope.targetPlatform+'/info').success(
+				function(data, status, headers, config) {
+					if (data.length > 0) {
+						$http.get('./rest/workflows/'+data[0].id.prettyFormat).success(
+							function(result, status, headers, config) {
+								$scope.state = result.name;
+						});
+					} else {
+						$scope.state = "Draft";
+					}
+				});
+	    };
+	    
+	    $scope.getMappingState();
 	    
 		$scope.executeTest = function() {
 			$scope.testInProgress = true;

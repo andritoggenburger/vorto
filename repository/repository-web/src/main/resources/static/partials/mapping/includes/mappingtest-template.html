@@ -11,12 +11,12 @@
       <p><i class="fa fa-check-circle-o fa-3x" aria-hidden="true"></i> Nice work! Your mapping is valid.</p>
     </div>
   	<div class="col-md-6">
-  		Specify your device test data (JSON format) and hit 'Run Test': </br>
+  		Specify the device test data (JSON format) and hit 'Run Test': </br>
   		<div id="testEditor" ui-ace="{ onLoad : sourceEditorLoaded, onChange: aceChanged }" style="height: 200px;"></div>
   		<button type="submit" class="btn btn-primary btn-lg pull-right" ng-click="executeTest()"><i ng-show="testInProgress" class='fa fa-refresh fa-spin'></i> Run Test</button>
   	</div>
   	<div class="col-md-6">
-  		Mapped Data:
+  		Vorto  - Information Model compliant Data :
   		<pretty-json ng-show="mappedOutput != null" json="mappedOutput" style="height: 200px;"></pretty-json>
   		<pretty-json ng-show="mappedOutput == null" json="{}" style="height: 200px;"></pretty-json>
   	</div>
