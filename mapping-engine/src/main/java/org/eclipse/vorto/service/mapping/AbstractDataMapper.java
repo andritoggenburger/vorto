@@ -74,7 +74,7 @@ public abstract class AbstractDataMapper<Result> implements IDataMapper<Result> 
 	private static JexlEngine createJexlEngine() {
 		JexlEngine jexl = new JexlEngine();
 		Map<String, Object> funcs = new HashMap<String, Object>();
-        //funcs.put("conversion", Conversion.class);
+        funcs.put("conversion", Conversion.class);
         funcs.put("string", StringUtils.class);
         funcs.put("number", NumberUtils.class);
         funcs.put("date", DateUtils.class);

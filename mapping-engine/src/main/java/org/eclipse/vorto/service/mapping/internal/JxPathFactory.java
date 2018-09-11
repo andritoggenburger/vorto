@@ -46,7 +46,7 @@ public class JxPathFactory {
 	public JxPathFactory(Optional<Functions> functionsFromMappings) {
 		this.converterLibrary = new FunctionLibrary();
 
-		//this.converterLibrary.addFunctions(new ClassFunctions(Conversion.class, "conversion"));
+		this.converterLibrary.addFunctions(new ClassFunctions(Conversion.class, "conversion"));
 		this.converterLibrary.addFunctions(new ClassFunctions(StringUtils.class, "string"));
 		this.converterLibrary.addFunctions(new ClassFunctions(String2Utils.class, "string2"));
 		this.converterLibrary.addFunctions(new ClassFunctions(NumberUtils.class, "number"));
