@@ -1,22 +1,22 @@
 version: '3'
 services:
   repository:
-    image: eclipsevorto/vorto-repo
+    image: eclipsevorto/vorto-repo:0.10.0.M6
     ports:
       - "8080:8080"
     volumes:
       - "./repository-web/docker:/code/config"
-    environment:
-    - USE_PROXY=0
     networks:
       - backend
   generators:
     depends_on: ["repository"]
-    image: eclipsevorto/vorto-generators
+    image: eclipsevorto/vorto-generators:0.10.0.M6
     volumes:
       - "./repository-web/docker:/gen/config"
     networks:
       - backend
+    command: ["/bin/bash","/gen/wait-for-it.sh","-t","50","localhost:8080","--","/bin/bash","/gen/run_generators.sh"] 
+
   example-generators:
     depends_on: ["repository"]
     image: eclipsevorto/vorto-generators-3rd-party
@@ -24,6 +24,10 @@ services:
       - "./repository-web/docker:/gen/config"
     networks:
       - backend
+    command: ["/bin/bash", "/gen/wait-for-it.sh", "-t", "70", "localhost:8080", "--","/bin/bash","/gen/run_generators.sh"] 
+   
+
+
 networks:
   backend:
     driver: bridge
