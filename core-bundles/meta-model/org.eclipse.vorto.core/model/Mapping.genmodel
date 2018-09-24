@@ -47,6 +47,7 @@
     </genClasses>
     <genClasses ecoreClass="Mapping.ecore#//OperationSource">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Mapping.ecore#//OperationSource/operation"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Mapping.ecore#//OperationSource/param"/>
     </genClasses>
     <genClasses ecoreClass="Mapping.ecore#//EventSource">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Mapping.ecore#//EventSource/event"/>
@@ -94,6 +95,11 @@
     <genClasses ecoreClass="Mapping.ecore#//MappingRule">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Mapping.ecore#//MappingRule/target"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Mapping.ecore#//MappingRule/sources"/>
+    </genClasses>
+    <genClasses ecoreClass="Mapping.ecore#//NFCTypeTarget">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Mapping.ecore#//NFCTypeTarget/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Mapping.ecore#//NFCTypeTarget/eepromoffset"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Mapping.ecore#//NFCTypeTarget/transparentchannelid"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>
