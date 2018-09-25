@@ -23,14 +23,24 @@ package org.eclipse.vorto.editor.mapping.validation
  */
 class MappingValidator extends AbstractMappingValidator {
 
-//  public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					MyDslPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
+
+	@Check
+	def checkMappingsMatchPlatform(Mapping mapping) {
+		
+		var targetPlatform = mapping.targetPlatform
+		var mappingRules = mapping.rules
+		
+		if (targetPlatform == "BEL_NFC") {
+			for (var i = 0; i < mappingRules.length; i++) {
+				var rule = mappingRules.get(i)
+				if (!(rule.target instanceof NFCTypeTarget)) {
+					error("Mapping rule target" + rule.target.getType().name +  " does not match selected target platform " + mapping.targetPlatform, mapping,
+						ModelPackage.Literals.MODEL__VERSION)
+				}
+			}
+		}
+	}
 }
+		
+
+
