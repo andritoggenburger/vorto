@@ -14,7 +14,12 @@
 * Bosch Software Innovations GmbH - Please refer to git log
 *******************************************************************************/
 package org.eclipse.vorto.editor.mapping.validation
-//import org.eclipse.xtext.validation.Check
+
+import org.eclipse.vorto.core.api.model.mapping.MappingModel
+import org.eclipse.vorto.core.api.model.model.ModelPackage
+import org.eclipse.vorto.core.api.model.mapping.NFCTypeTarget
+import org.eclipse.xtext.validation.Check
+
 
 /**
  * Custom validation rules. 
@@ -25,7 +30,7 @@ class MappingValidator extends AbstractMappingValidator {
 
 
 	@Check
-	def checkMappingsMatchPlatform(Mapping mapping) {
+	def checkMappingsMatchPlatform(MappingModel mapping) {
 		
 		var targetPlatform = mapping.targetPlatform
 		var mappingRules = mapping.rules
@@ -34,12 +39,14 @@ class MappingValidator extends AbstractMappingValidator {
 			for (var i = 0; i < mappingRules.length; i++) {
 				var rule = mappingRules.get(i)
 				if (!(rule.target instanceof NFCTypeTarget)) {
-					error("Mapping rule target" + rule.target.getType().name +  " does not match selected target platform " + mapping.targetPlatform, mapping,
+					error("Entered mapping rule "+ rule.getClass().getName() + "  does not match selected target platform " + mapping.targetPlatform, mapping,
 						ModelPackage.Literals.MODEL__VERSION)
 				}
 			}
 		}
 	}
+	
+	
 }
 		
 
