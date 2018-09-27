@@ -14,10 +14,15 @@
  */
 package org.eclipse.vorto.repository.web.config;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.servlet.Filter;
 
+import org.springframework.security.core.Authentication;
+import org.eclipse.vorto.repository.account.impl.IUserRepository;
+import org.eclipse.vorto.repository.account.impl.User;
 import org.eclipse.vorto.repository.sso.AuthorizationTokenFilter;
 import org.eclipse.vorto.repository.sso.InterceptedUserInfoTokenServices;
 import org.eclipse.vorto.repository.sso.boschid.EidpOAuth2RestTemplate;
@@ -26,6 +31,8 @@ import org.eclipse.vorto.repository.sso.boschid.JwtTokenUserInfoServices;
 import org.eclipse.vorto.repository.web.AngularCsrfHeaderFilter;
 import org.eclipse.vorto.repository.web.listeners.AuthenticationEntryPoint;
 import org.eclipse.vorto.repository.web.listeners.AuthenticationSuccessHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.AuthoritiesExtractor;
@@ -36,6 +43,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -48,11 +57,14 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilt
 import org.springframework.security.oauth2.client.token.AccessTokenProvider;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.CompositeFilter;
 
 @Configuration
@@ -60,8 +72,69 @@ import org.springframework.web.filter.CompositeFilter;
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 @EnableOAuth2Client
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-	
+	   private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+	@Autowired
+	private IUserRepository userRepository;
+	
+	 @Autowired
+	 public void configureGlobal(AuthenticationManagerBuilder auth)
+	       throws Exception {
+	     auth
+	     .inMemoryAuthentication()
+	     .withUser("test").password("test")
+	     .authorities("ROLE_USER") .and().withUser("test2").password("test2").roles("USER").and().withUser("test3").password("test3").roles("USER")
+	     .and().withUser("admin").password("admin").roles("ADMIN")
+	     .and().withUser("user").password("user").roles("USER");
+	   }
+
+	
+	 
+	 @Component("customBasicAuthFilter")
+	 public class CustomBasicAuthFilter extends BasicAuthenticationFilter {
+
+		
+		private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+		
+
+		 
+		 
+		 @Autowired
+	     public CustomBasicAuthFilter(AuthenticationManager authenticationManager) {
+	         super(authenticationManager);
+	     }
+
+	     protected void onSuccessfulAuthentication(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response, Authentication authResult) throws IOException {
+	         // Do what you want here
+	 		Authentication auth = authResult;
+			
+	 		LOGGER.info("onSuccessfulAuthentication"+auth.getName());
+	 		
+			Optional<User> _user = Optional.ofNullable(userRepository.findByUsername(auth.getName()));
+			
+	
+			
+			String targetUrl = _user.map(user -> {
+				return "/#/";
+			}).orElse("/#/signup");
+
+			if (response.isCommitted()) {
+				logger.debug("Response has already been committed. Unable to redirect to " + targetUrl);
+				return;
+			}
+			
+
+	 		//String targetUrl = "/#/";
+	 		
+			redirectStrategy.sendRedirect(request, response, targetUrl);
+	    	 
+	    	 
+	     }
+	 }
+	 
+	//private  CustomBasicAuthFilter customBasicAuthFilter;
+	 
+	 
 	@Autowired
 	private AuthenticationEntryPoint authenticationEntryPoint;
 	
@@ -86,12 +159,52 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthoritiesExtractor authoritiesExtractor;
 	
+	
+	
+	
+	
+  @Override
+   protected void configure(HttpSecurity http) throws Exception {
+      http
+      .authorizeRequests()
+      .anyRequest().authenticated()
+      .antMatchers(HttpMethod.GET, "infomodelrepository").permitAll()
+      .antMatchers(HttpMethod.GET, "/rest/**","/api/**").permitAll()
+	   .antMatchers("/user/**").permitAll()
+	   .antMatchers(HttpMethod.PUT, "/rest/**","/api/**").permitAll()
+	   .antMatchers(HttpMethod.POST, "/rest/**","/api/**").authenticated()
+	   .antMatchers(HttpMethod.DELETE, "/rest/**","/api/**").authenticated()
+		
+	   .and()
+		.addFilterAfter(new AngularCsrfHeaderFilter(), CsrfFilter.class)
+		.csrf()
+		.csrfTokenRepository(csrfTokenRepository())
+		
+		.and()
+		.csrf()
+			.disable()
+		.logout()
+			.logoutUrl("/logout")
+			.logoutSuccessUrl("/")
+		
+      .and()
+      .httpBasic()
+      .realmName("Your App");
+      
+     // http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+      
+    }
+
+	
+	/*
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
 		http.httpBasic()
 			.and()
 				.authorizeRequests()
+				.anyRequest().authenticated()
 				.antMatchers(HttpMethod.GET, "/rest/**","/api/**").permitAll()
 				.antMatchers("/user/**").permitAll()
 				.antMatchers(HttpMethod.PUT, "/rest/**","/api/**").permitAll()
@@ -99,7 +212,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.DELETE, "/rest/**","/api/**").authenticated()
 			.and()
 				.addFilterAfter(new AngularCsrfHeaderFilter(), CsrfFilter.class)
-				.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class)
+				.addFilter(new CustomBasicAuthFilter(this.authenticationManager()))
 				.addFilterAfter(bearerTokenFilter(), SecurityContextPersistenceFilter.class)
 				.csrf()
 					.csrfTokenRepository(csrfTokenRepository())
@@ -118,10 +231,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
 	}
 	
+*/
+	
 	@Bean
 	public static PasswordEncoder encoder() {
 		return new BCryptPasswordEncoder(11);
 	}
+	
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 	
 	private CsrfTokenRepository csrfTokenRepository() {
 		HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
@@ -145,6 +265,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private Filter ssoFilter() {
 		CompositeFilter filter = new CompositeFilter();
 		filter.setFilters(Arrays.asList(githubFilter(), eidpFilter()));
+		
+		//CustomBasicAuthFilter filter = CustomBasicAuthFilter(
+	
+		
 		return filter;
 	}
 	

@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.vorto.repository.account.IUserAccountService;
 import org.eclipse.vorto.repository.account.impl.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -43,6 +45,8 @@ import io.swagger.annotations.ApiResponses;
 
 @RestController
 public class HomeController {
+	
+	   private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 	
 	private static final String LOGIN_TYPE = "loginType";
 	private static final String LOGOUT_URL = "/logout";
@@ -89,23 +93,36 @@ public class HomeController {
 		
 		Map<String, String> map = new LinkedHashMap<>();
 
+		LOGGER.info("getuser");
+		
 		if(user == null)
 			return new ResponseEntity<Map<String, String>>(map, HttpStatus.UNAUTHORIZED);
 		
-		OAuth2Authentication oauth2User = (OAuth2Authentication) user;
+		UsernamePasswordAuthenticationToken usernamePasswordUser = (UsernamePasswordAuthenticationToken) user;
 		
-		oauth2User.getAuthorities().stream().findFirst().ifPresent(role -> map.put("role", role.getAuthority()));
+		usernamePasswordUser.getAuthorities().stream().findFirst().ifPresent(role -> map.put("role", role.getAuthority()));
+		//oauth2User.getAuthorities().stream().findFirst().ifPresent(role -> map.put("role", role.getAuthority()));
 		
-		User userAccount = accountService.getUser(oauth2User.getName());
+		User userAccount = accountService.getUser(usernamePasswordUser.getName());
+	//	if (userAccount == null) {
+	//		userAccount = accountService.create(usernamePasswordUser.getName()); 	
+		
+	//	}
+	//	LOGGER.info("getuser " +  usernamePasswordUser.getName());
+	//	LOGGER.info("useraccount" + userAccount);
 		
 		Date updateCutoff = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(updateDate);
 		
-		map.put("name", oauth2User.getName());
-		map.put("displayName", getDisplayName(oauth2User));
+		map.put("name", usernamePasswordUser.getName());
+		map.put("displayName", getDisplayName(usernamePasswordUser));
 		map.put("isRegistered", Boolean.toString(userAccount != null));
-		map.put("needUpdate", Boolean.toString(needUpdate(userAccount, updateCutoff)));
-		Map<String, String> userDetails = ((Map<String, String>) oauth2User.getUserAuthentication().getDetails());
-		map.put("loginType", userDetails.get(LOGIN_TYPE));
+		//map.put("isRegistered", Boolean.toString(true));
+		map.put("needUpdate", Boolean.toString(false));
+		//map.put("needUpdate", Boolean.toString(needUpdate(userAccount, updateCutoff)));
+		//Map<String, String> userDetails = ((Map<String, String>) usernamePasswordUser.getDetails());
+		//map.put("loginType", userDetails.get(LOGIN_TYPE));
+		
+		//map.put("loginType", )
 		
 		return new ResponseEntity<Map<String, String>>(map, HttpStatus.OK);
 	}
@@ -114,9 +131,9 @@ public class HomeController {
 		return user != null && user.getLastUpdated().before(updateCutoff) && new Date().after(updateCutoff);
 	}
 	
-	private String getDisplayName(OAuth2Authentication oauth2User) {
-		UsernamePasswordAuthenticationToken userAuth = (UsernamePasswordAuthenticationToken) oauth2User.getUserAuthentication();
-		
+	private String getDisplayName(UsernamePasswordAuthenticationToken userAuth ) {
+		//UsernamePasswordAuthenticationToken userAuth = (UsernamePasswordAuthenticationToken) oauth2User.getUserAuthentication();
+	/*	
 		@SuppressWarnings("unchecked")
 		Map<String, Object> userDetailsMap = (Map<String, Object>) userAuth.getDetails();
 		
@@ -129,8 +146,9 @@ public class HomeController {
 		if (email != null) {
 			return email.split("@")[0];
 		}
-		
-		return oauth2User.getName();
+		*/
+		LOGGER.info("getdisplayname" + userAuth.getName());
+		return userAuth.getName();
 	}
 
 	@RequestMapping(value ={ "/context" }, method = RequestMethod.GET)

@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,14 +70,16 @@ public class UserController {
 	    		consumes = "application/json")
 	public ResponseEntity<Boolean> createUser(Principal user) {
 		
-		OAuth2Authentication oauth2User = (OAuth2Authentication) user;
+		//OAuth2Authentication oauth2User = (OAuth2Authentication) user;
+		UsernamePasswordAuthenticationToken usernamePasswordUser = (UsernamePasswordAuthenticationToken) user;
+	
 		
-		if (userRepository.findByUsername(oauth2User.getName()) != null ) {           
+		if (userRepository.findByUsername(usernamePasswordUser.getName()) != null ) {           
 			return new ResponseEntity<Boolean>(false, HttpStatus.CREATED);
 		}
 		
-		LOGGER.info("User: '{}' accepted the terms and conditions.", oauth2User.getName());
-		User createdUser = accountService.create(oauth2User.getName()); 
+		LOGGER.info("User: '{}' accepted the terms and conditions.", usernamePasswordUser.getName());
+		User createdUser = accountService.create(usernamePasswordUser.getName()); 
 		UserUtils.refreshSpringSecurityUser(createdUser); // change the spring oauth context with the updated user and its roles
 		
 		return new ResponseEntity<Boolean>(true, HttpStatus.CREATED);
@@ -85,7 +88,7 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.POST, value = "/{username:.+}/updateTask")
 	@PreAuthorize("hasRole('ROLE_ADMIN') or #username == authentication.name")
 	public ResponseEntity<Boolean> updateUser(Principal user, @ApiParam(value = "Username", required = true) @PathVariable String username) {
-		
+
 		User userAccount = userRepository.findByUsername(username);
 		if (userAccount == null) {
 			return new ResponseEntity<Boolean>(true, HttpStatus.BAD_REQUEST);
